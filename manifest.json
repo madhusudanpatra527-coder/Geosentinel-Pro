@@ -1,0 +1,16 @@
+{
+  "name": "GeoSentinel Pro — Soil & Foundation Integrity Monitor",
+  "short_name": "GeoSentinel",
+  "description": "International-standard soil bearing capacity & foundation integrity monitoring platform with GIS geofencing and an offline geotechnical AI engine.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#eceae3",
+  "theme_color": "#185FA5",
+  "orientation": "any",
+  "icons": [
+    { "src": "assets/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

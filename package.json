@@ -1,0 +1,28 @@
+{
+  "name": "geosentinel-pro",
+  "version": "3.0.0",
+  "description": "International-standard soil bearing capacity & foundation integrity monitoring platform with GIS geofencing and an offline geotechnical AI engine.",
+  "private": true,
+  "scripts": {
+    "test": "node tests/smoke-test.js",
+    "serve": "python3 -m http.server 8080"
+  },
+  "devDependencies": {
+    "jsdom": "^24.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/geosentinel-pro.git"
+  },
+  "keywords": [
+    "geotechnical",
+    "iot",
+    "soil-monitoring",
+    "structural-health-monitoring",
+    "geofencing",
+    "leaflet",
+    "digital-twin",
+    "pwa"
+  ]
+}

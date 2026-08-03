@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoSentinel Pro — International Standard Soil &amp; Foundation Integrity Monitor</title>
+<meta name="description" content="Real-time soil bearing capacity & foundation integrity monitoring platform with GIS geofencing, an offline geotechnical AI engine, and multi-standard compliance tracking (IS 6403, IS 1904, Eurocode 7, ISO 22476, IEC 61511).">
+<meta name="theme-color" content="#185FA5">
+
+<!-- Open Graph -->
+<meta property="og:title" content="GeoSentinel Pro">
+<meta property="og:description" content="International-standard soil bearing capacity & foundation integrity monitoring platform with predictive AI and GIS geofencing.">
+<meta property="og:type" content="website">
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+
+<!-- Styles -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ══ SPLASH SCREEN ══ -->
+<div id="splash">
+  <div class="splash-logo"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+  <div class="splash-title">GeoSentinel Pro</div>
+  <div class="splash-sub">Initializing geotechnical intelligence engine…</div>
+  <div class="splash-bar"><div class="splash-fill"></div></div>
+</div>
+
+<div class="app">
+
+<!-- ══ TOP BAR ══ -->
+<div class="topbar">
+  <div class="logo-wrap">
+    <div class="logo"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+    <div>
+      <div class="app-title">GeoSentinel Pro</div>
+      <div class="app-sub">International Standard Soil &amp; Foundation Integrity Monitor — v3.0</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span class="sil-badge">SIL 2 Certified</span>
+    <span class="sil-badge" style="background:var(--ok-bg);color:var(--ok)">ISO 22476</span>
+    <span class="sil-badge" style="background:var(--warn-bg);color:var(--warn)">Eurocode 7</span>
+    <div class="sync-lbl" id="syncTime">Last sync: just now</div>
+    <div class="live-pill"><span class="pulse"></span> Live — 18 sensors</div>
+  </div>
+</div>
+
+<!-- ══ NAVIGATION ══ -->
+<div class="nav">
+  <button class="nav-btn active" onclick="switchTab('dashboard',this)">Dashboard</button>
+  <button class="nav-btn" onclick="switchTab('sensors',this)">Sensors</button>
+  <button class="nav-btn" onclick="switchTab('analytics',this)">Analytics</button>
+  <button class="nav-btn" onclick="switchTab('map',this)">Map &amp; Geofencing</button>
+  <button class="nav-btn" onclick="switchTab('twin',this)">Digital Twin</button>
+  <button class="nav-btn" onclick="switchTab('ai',this)">AI Assistant</button>
+  <button class="nav-btn" onclick="switchTab('compliance',this)">Compliance</button>
+  <button class="nav-btn" onclick="switchTab('remedial',this)">Remedial</button>
+  <button class="nav-btn" onclick="switchTab('alerts',this)">Alerts <span class="nbadge" id="alertBadge">3</span></button>
+  <button class="nav-btn" onclick="switchTab('report',this)">Report &amp; Export</button>
+</div>
+
+<!-- ══ ALARM BANNER ══ -->
+<div class="alarm-banner" id="alarmBanner">
+  <div class="alarm-icon"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+  <div class="alarm-text">
+    <div class="alarm-title" id="alarmTitle">CRITICAL ALERT</div>
+    <div class="alarm-sub" id="alarmSub">Siren active</div>
+  </div>
+  <div style="display:flex;gap:5px;flex-shrink:0">
+    <button class="abtn" id="sirenBtn" onclick="toggleSiren()">Silence</button>
+    <button class="abtn" onclick="switchTab('remedial',document.querySelectorAll('.nav-btn')[7])">Remedial</button>
+    <button class="abtn" onclick="dismissAlarm()">Dismiss</button>
+  </div>
+</div>
+
+<!-- ══ CONTENT ══ -->
+<div class="content">
+
+<!-- ━━ DASHBOARD ━━ -->
+<div id="sec-dashboard" class="section active">
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-label">Avg bearing capacity</div>
+      <div><span class="metric-val" id="m-bearing">247</span><span class="metric-unit">kPa</span></div>
+      <div class="metric-trend trend-bad">-2.1% vs yesterday</div>
+      <div class="pbar"><div class="pbar-fill" style="width:62%;background:#185FA5"></div></div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Foundation settlement</div>
+      <div><span class="metric-val" id="m-settle">14.3</span><span class="metric-unit">mm</span></div>
+      <div class="metric-trend trend-bad">+0.8mm this week</div>
+      <div class="pbar"><div class="pbar-fill" style="width:57%;background:#BA7517"></div></div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Soil moisture</div>
+      <div><span class="metric-val" id="m-moisture">23.6</span><span class="metric-unit">%</span></div>
+      <div class="metric-trend trend-ok">Within safe range</div>
+      <div class="pbar"><div class="pbar-fill" style="width:47%;background:#1D9E75"></div></div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Vibration index</div>
+      <div><span class="metric-val" id="m-vib">0.032</span><span class="metric-unit">g</span></div>
+      <div class="metric-trend trend-ok">Low — no concern</div>
+      <div class="pbar"><div class="pbar-fill" style="width:32%;background:#1D9E75"></div></div>
+    </div>
+  </div>
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-label">Factor of safety (site avg)</div>
+      <div><span class="metric-val" id="m-fos">1.24</span></div>
+      <div class="metric-trend trend-bad">IS 6403 min: 3.0</div>
+      <div class="pbar"><div class="pbar-fill" style="width:41%;background:#E24B4A"></div></div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Pore water pressure</div>
+      <div><span class="metric-val" id="m-pore">42</span><span class="metric-unit">kPa</span></div>
+      <div class="metric-trend trend-ok">Acceptable range</div>
+      <div class="pbar"><div class="pbar-fill" style="width:38%;background:#378ADD"></div></div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">SIL integrity level</div>
+      <div><span class="metric-val" style="font-size:18px">SIL 2</span></div>
+      <div class="metric-trend trend-ok">IEC 61511 certified</div>
+      <div class="pbar"><div class="pbar-fill" style="width:80%;background:#1D9E75"></div></div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Data quality index</div>
+      <div><span class="metric-val" id="m-dqi">94</span><span class="metric-unit">%</span></div>
+      <div class="metric-trend trend-ok">ISO 9001 compliant</div>
+      <div class="pbar"><div class="pbar-fill" style="width:94%;background:#1D9E75"></div></div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Bearing capacity trend — 24h with AI forecast</div>
+      <div style="display:flex;gap:12px;margin-bottom:8px;font-size:10px;color:var(--txt2)">
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:2px;background:#378ADD;display:inline-block"></span>Actual</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:2px;background:#E24B4A;display:inline-block"></span>IS 6403 limit</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:2px;background:#5DCAA5;display:inline-block"></span>AI forecast</span>
+      </div>
+      <div style="position:relative;height:190px"><canvas id="chartBearing"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Foundation integrity heatmap — 12 zones</div>
+      <div style="font-size:10px;color:var(--txt3);margin-bottom:8px">Real-time zone-by-zone capacity</div>
+      <div class="heatmap" id="heatmap"></div>
+      <div style="display:flex;gap:10px;margin-top:8px;font-size:10px;color:var(--txt2)">
+        <span style="background:#C0DD97;padding:1px 5px;border-radius:2px;color:#3B6D11">Good</span>
+        <span style="background:#FAC775;padding:1px 5px;border-radius:2px;color:#633806">Warning</span>
+        <span style="background:#F09595;padding:1px 5px;border-radius:2px;color:#791F1F">Critical</span>
+      </div>
+    </div>
+  </div>
+  <div class="grid3">
+    <div class="card">
+      <div class="card-title">Predictive risk index — 30-day</div>
+      <div id="predictBars"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Settlement progression</div>
+      <div style="position:relative;height:130px"><canvas id="chartSettle"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Live alert feed</div>
+      <div id="miniAlerts"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━ SENSORS ━━ -->
+<div id="sec-sensors" class="section">
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">Live sensor telemetry — MQTT / Modbus / OPC-UA</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Sensor ID</th><th>Location</th><th>Depth</th><th>Bearing (kPa)</th><th>Settlement</th><th>Moisture</th><th>Temp</th><th>Pore P.</th><th>FOS</th><th>Status</th><th>Protocol</th><th>Last read</th>
+        </tr></thead>
+        <tbody id="sensorTbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Moisture &amp; temperature — 24h</div>
+      <div style="position:relative;height:190px"><canvas id="chartMoist"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Sensor health grid</div>
+      <div class="sensor-grid" id="sensorHealth"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Calibration &amp; maintenance schedule</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sensor</th><th>Last calibration</th><th>Next due</th><th>Standard</th><th>Drift</th><th>Status</th></tr></thead>
+        <tbody id="calibTbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ━━ ANALYTICS ━━ -->
+<div id="sec-analytics" class="section">
+  <div class="grid2" style="margin-bottom:12px">
+    <div class="card">
+      <div class="card-title">Bearing capacity by zone (kPa) — Terzaghi/Meyerhof analysis</div>
+      <div style="position:relative;height:200px"><canvas id="chartZone"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Failure probability — 30-day AI forecast</div>
+      <div style="position:relative;height:200px"><canvas id="chartRisk"></canvas></div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">Soil profile — depth vs bearing capacity (SPT correlation)</div>
+    <div style="position:relative;height:180px"><canvas id="chartDepth"></canvas></div>
+  </div>
+  <div class="grid3">
+    <div class="card">
+      <div class="card-title">Settlement vs IS 1904 limit</div>
+      <div style="font-size:10px;color:var(--txt2);margin-bottom:8px">Limit: 25mm (IS 1904:1986)</div>
+      <div id="settleSummary"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Soil classification — IS 1498</div>
+      <div id="soilClass"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Load bearing index by zone</div>
+      <div id="lbiSummary"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━ MAP & GEOFENCING ━━ -->
+<div id="sec-map" class="section">
+  <div class="map-stat-grid">
+    <div class="map-stat"><div class="ms-lbl">Geofenced zones</div><div class="ms-val" id="ms-zones">0</div></div>
+    <div class="map-stat"><div class="ms-lbl">Sensors in fence</div><div class="ms-val" id="ms-fenced">0</div></div>
+    <div class="map-stat"><div class="ms-lbl">Active alarms</div><div class="ms-val" id="ms-alarms" style="color:#a32d2d">1</div></div>
+    <div class="map-stat"><div class="ms-lbl">Fenced area</div><div class="ms-val" id="ms-area">—</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:12px">
+    <div>
+      <div class="map-toolbar">
+        <button class="tbtn" id="btnPoly" onclick="startDraw('polygon')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 20 2 20"/></svg>Polygon
+        </button>
+        <button class="tbtn" id="btnRect" onclick="startDraw('rectangle')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>Rectangle
+        </button>
+        <button class="tbtn" id="btnCirc" onclick="startDraw('circle')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>Circle
+        </button>
+        <button class="tbtn" id="btnCancel" style="display:none" onclick="cancelDraw()">Cancel</button>
+        <button class="tbtn" onclick="clearAllFences()">Clear all</button>
+        <button class="tbtn" onclick="locateMe()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>Locate me
+        </button>
+        <div style="display:flex;gap:5px;align-items:center;margin-left:auto">
+          <input id="inLat" value="21.1997" style="width:100px;font-size:11px;padding:4px 7px;border-radius:var(--r8);border:0.5px solid var(--bdr2);background:var(--bg);color:var(--txt)">
+          <input id="inLng" value="86.1201" style="width:100px;font-size:11px;padding:4px 7px;border-radius:var(--r8);border:0.5px solid var(--bdr2);background:var(--bg);color:var(--txt)">
+          <button class="tbtn" onclick="gotoCoords()">Go</button>
+        </div>
+      </div>
+      <div id="mapContainer"></div>
+      <div class="map-hint" id="mapHint">Select Polygon, Rectangle, or Circle to draw a surveillance geofence. Double-click to close a polygon.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="card">
+        <div class="card-title">Surveillance zones</div>
+        <div style="display:flex;gap:5px;margin-bottom:8px">
+          <input id="zname" placeholder="Zone name…" style="flex:1;font-size:11px;padding:4px 8px;border-radius:var(--r8);border:0.5px solid var(--bdr2);background:var(--bg);color:var(--txt)">
+          <input type="color" id="zcol" value="#185FA5" style="width:28px;height:27px;padding:2px;border-radius:4px;border:0.5px solid var(--bdr2);cursor:pointer">
+        </div>
+        <div class="fence-list" id="fenceList"><div style="font-size:11px;color:var(--txt3);padding:5px 0">No zones drawn yet.</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Alarm thresholds</div>
+        <div style="font-size:10px;color:var(--txt2);margin-bottom:3px">Critical BC (kPa)</div>
+        <input type="range" min="100" max="250" value="200" step="5" id="critT" oninput="document.getElementById('critTv').textContent=this.value+' kPa'">
+        <div style="font-size:10px;color:var(--txt);text-align:right;margin-bottom:6px" id="critTv">200 kPa</div>
+        <div style="font-size:10px;color:var(--txt2);margin-bottom:3px">Warning BC (kPa)</div>
+        <input type="range" min="160" max="300" value="230" step="5" id="warnT" oninput="document.getElementById('warnTv').textContent=this.value+' kPa'">
+        <div style="font-size:10px;color:var(--txt);text-align:right;margin-bottom:8px" id="warnTv">230 kPa</div>
+        <div style="display:flex;gap:5px">
+          <button class="tbtn" style="flex:1;justify-content:center;font-size:10px" onclick="testAlarm('crit')">Test critical</button>
+          <button class="tbtn" style="flex:1;justify-content:center;font-size:10px" onclick="testAlarm('warn')">Test warning</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Map legend</div>
+        <div style="display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--txt2)">
+          <span style="display:flex;align-items:center;gap:6px"><span style="width:11px;height:11px;border-radius:50%;background:#1D9E75;display:inline-block"></span>OK sensor</span>
+          <span style="display:flex;align-items:center;gap:6px"><span style="width:11px;height:11px;border-radius:50%;background:#BA7517;display:inline-block"></span>Warning sensor</span>
+          <span style="display:flex;align-items:center;gap:6px"><span style="width:11px;height:11px;border-radius:50%;background:#E24B4A;display:inline-block;animation:critpulse .8s infinite"></span>Critical sensor</span>
+          <span style="display:flex;align-items:center;gap:6px;margin-top:4px"><span style="width:16px;height:2px;background:#185FA5;display:inline-block"></span>Geofence boundary</span>
+          <span style="display:flex;align-items:center;gap:6px"><span style="width:16px;height:2px;background:#888;display:inline-block;border-top:2px dashed #888;height:0;margin-top:1px"></span>Site perimeter</span>
+        </div>
+        <div style="margin-top:10px;font-size:10px;color:var(--txt3)">Baripada, Odisha<br>21.1997°N, 86.1201°E</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━ DIGITAL TWIN ━━ -->
+<div id="sec-twin" class="section">
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">3D foundation profile — digital twin</div>
+      <canvas id="dtCanvas"></canvas>
+      <div style="display:flex;gap:10px;margin-top:8px;font-size:10px;color:var(--txt2);flex-wrap:wrap">
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#C0DD97;border-radius:2px;display:inline-block"></span>Good (&gt;250 kPa)</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#FAC775;border-radius:2px;display:inline-block"></span>Warning (200–250)</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#F09595;border-radius:2px;display:inline-block"></span>Critical (&lt;200)</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="card">
+        <div class="card-title">Twin model parameters</div>
+        <div style="display:flex;flex-direction:column;gap:5px;font-size:11px">
+          <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid var(--bdr)"><span style="color:var(--txt2)">Model type</span><span style="color:var(--txt)">FEM — linear elastic</span></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid var(--bdr)"><span style="color:var(--txt2)">Last updated</span><span style="color:var(--txt)" id="twinUpdate">Just now</span></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid var(--bdr)"><span style="color:var(--txt2)">Mesh resolution</span><span style="color:var(--txt)">0.5m × 0.5m</span></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid var(--bdr)"><span style="color:var(--txt2)">Depth layers</span><span style="color:var(--txt)">7 (0.5m–6.0m)</span></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid var(--bdr)"><span style="color:var(--txt2)">Data confidence</span><span style="color:var(--txt)">94%</span></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0"><span style="color:var(--txt2)">Standard</span><span style="color:var(--txt)">ISO 22476 / Eurocode 7</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Subsurface layer model</div>
+        <div id="layerModel" style="display:flex;flex-direction:column;gap:4px"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Failure mode analysis</div>
+        <div id="fmaPanel" style="font-size:11px;line-height:1.7;color:var(--txt2)"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━ AI ASSISTANT ━━ -->
+<div id="sec-ai" class="section">
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <div style="width:26px;height:26px;border-radius:50%;background:var(--info-bg);display:flex;align-items:center;justify-content:center">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:500;color:var(--txt)">GeoSentinel AI — Geotechnical Intelligence Engine</div>
+        <div style="font-size:10px;color:var(--txt3)">Onboard · No external API · IS 6403 / Eurocode 7 / ASCE 7 knowledge base</div>
+      </div>
+    </div>
+    <div class="qp-row">
+      <button class="qp" onclick="sendQuick(this)">Analyze current readings</button>
+      <button class="qp" onclick="sendQuick(this)">Failure risk this month</button>
+      <button class="qp" onclick="sendQuick(this)">Recommend maintenance</button>
+      <button class="qp" onclick="sendQuick(this)">Settlement trend analysis</button>
+      <button class="qp" onclick="sendQuick(this)">IS code compliance check</button>
+      <button class="qp" onclick="sendQuick(this)">Liquefaction assessment</button>
+      <button class="qp" onclick="sendQuick(this)">Eurocode 7 check</button>
+    </div>
+    <div class="chat-msgs" id="chatMsgs">
+      <div class="msg ai">Hello — I am GeoSentinel AI, your onboard geotechnical intelligence engine. I have live access to all 9 sensor nodes at 21.1997°N, 86.1201°E. I carry the full IS 6403, IS 1904, IS 1892, Eurocode 7, ASCE 7-22, and Terzaghi/Meyerhof/Hansen knowledge base. I run entirely offline — no external API required. Ask me anything about your site's soil bearing capacity, foundation integrity, settlement, moisture, or maintenance planning.</div>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" id="chatInput" placeholder="Ask about soil conditions, risk analysis, remediation, IS codes…" onkeydown="if(event.key==='Enter')sendChat()">
+      <button onclick="sendChat()">Send ↗</button>
+    </div>
+  </div>
+</div>
+
+<!-- ━━ COMPLIANCE ━━ -->
+<div id="sec-compliance" class="section">
+  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px" id="complianceGrid"></div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Protocol connectivity — multi-standard IoT</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Protocol</th><th>Standard</th><th>Sensors</th><th>Data rate</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>MQTT v5</td><td>ISO/IEC 20922</td><td>9 active</td><td>1 Hz</td><td><span class="badge badge-ok">Connected</span></td></tr>
+            <tr><td>Modbus RTU</td><td>IEC 61158</td><td>6 active</td><td>0.5 Hz</td><td><span class="badge badge-ok">Connected</span></td></tr>
+            <tr><td>OPC-UA</td><td>IEC 62541</td><td>3 active</td><td>2 Hz</td><td><span class="badge badge-warn">Standby</span></td></tr>
+            <tr><td>LoRaWAN</td><td>TS001-1.0.4</td><td>0 active</td><td>—</td><td><span class="badge badge-info">Configured</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Quality assurance — ISO 9001:2015</div>
+      <div id="qaPanel"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━ REMEDIAL ━━ -->
+<div id="sec-remedial" class="section">
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:12px">
+    <div class="card">
+      <div class="card-title">Remedial measures — cloud geotechnical database (IS / Eurocode / ASCE)</div>
+      <div id="remedialList"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="card">
+        <div class="card-title">Applicable standards</div>
+        <div style="font-size:11px;color:var(--txt2);line-height:1.9">
+          IS 1904:1986 — Foundation design<br>IS 6403:1981 — Bearing capacity<br>IS 1892:1979 — Subsurface investigation<br>IS 2911:2010 — Pile foundations<br>IS 15284:2003 — Ground improvement<br>IS 1888:1982 — Plate load test<br>IS 13827:1993 — Seismic resistance<br>IS 4558:1995 — Drainage works<br>EN 1997-1:2004 — Eurocode 7<br>ASCE 7-22 Ch.18 — Foundation loads<br>ASTM D1586 — SPT method<br>IEC 61511 — Functional safety
+        </div>
+      </div>
+      <div class="card" style="background:var(--crit-bg)">
+        <div class="card-title" style="color:var(--crit)">Emergency protocol</div>
+        <div style="font-size:11px;color:var(--crit);line-height:1.8">
+          1. Restrict all structural loads<br>2. Install settlement markers<br>3. Alert licensed geotechnical engineer<br>4. Commission IS 1892 borehole survey<br>5. Prepare grouting brief<br>6. Document per IS 13827 / IEC 61511
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━ ALERTS ━━ -->
+<div id="sec-alerts" class="section">
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">Active alerts &amp; alarm log</div>
+    <div id="fullAlerts"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">AI-recommended maintenance schedule</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Task</th><th>Zone</th><th>Priority</th><th>Due</th><th>Est. cost</th><th>Standard ref.</th><th>Status</th></tr></thead>
+        <tbody id="maintTbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ━━ REPORT & EXPORT ━━ -->
+<div id="sec-report" class="section">
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:12px">
+    <div class="card">
+      <div class="card-title">Site assessment report — auto-generated</div>
+      <div id="reportContent"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="card">
+        <div class="card-title">Export options</div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <button class="tbtn" style="width:100%;justify-content:space-between" onclick="exportJSON()">Export sensor data (JSON) <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+          <button class="tbtn" style="width:100%;justify-content:space-between" onclick="exportCSV()">Export readings (CSV) <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+          <button class="tbtn" style="width:100%;justify-content:space-between" onclick="printReport()">Print / save PDF <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Audit trail</div>
+        <div id="auditLog" style="font-size:10px;display:flex;flex-direction:column;gap:3px;max-height:200px;overflow-y:auto"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Site metadata</div>
+        <div style="font-size:11px;line-height:1.9;color:var(--txt2)">
+          Project: Baripada Geotechnical Monitor<br>
+          Site ID: GS-OD-2024-001<br>
+          Coordinates: 21.1997°N, 86.1201°E<br>
+          State: Odisha, India<br>
+          Seismic zone: III (IS 1893)<br>
+          Soil type: Mixed alluvial<br>
+          Design BC: 200 kPa<br>
+          Report standard: IS 1892:1979
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end .content -->
+
+<div class="app-footer">
+  GeoSentinel Pro v3.0 — Open source under the MIT License · Built with Leaflet, Chart.js &amp; a fully offline AI engine<br>
+  <a href="https://github.com/" target="_blank" rel="noopener">View on GitHub</a>
+</div>
+
+</div><!-- end .app -->
+
+<!-- External libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<!-- Application modules (order matters) -->
+<script src="js/data.js"></script>
+<script src="js/siren.js"></script>
+<script src="js/alarm.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/twin.js"></script>
+<script src="js/compliance.js"></script>
+<script src="js/remedial.js"></script>
+<script src="js/report.js"></script>
+<script src="js/map.js"></script>
+<script src="js/ai-engine.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
